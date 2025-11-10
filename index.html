@@ -5,19 +5,72 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>炊飯 水比率 逆算ツール</title>
   <style>
-    body{font-family: 'Segoe UI',sans-serif;background:#fafafa;color:#222;margin:20px}
-    h1{font-size:1.4rem;margin-bottom:8px}
-    label{display:block;margin:8px 0}
-    input[type=number]{padding:6px;width:220px;box-sizing:border-box}
-    .row{display:flex;gap:12px;align-items:center}
-    .small{width:120px}
-    .result{margin-top:14px;padding:12px;background:#fff;border-radius:8px;box-shadow:0 0 6px rgba(0,0,0,0.06)}
-    .muted{font-size:0.9rem;color:#666}
-    .note{font-size:0.85rem;color:#444;margin-top:6px}
-    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;background:#333;color:#fff;padding:10px 14px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .3s}
-    .toast.show{opacity:1}
-    .water-ratio{color:#42a5f5;font-weight:bold}
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #fafafa;
+    color: #222;
+    margin: 20px;
+    font-size: 18px;
+  }
+
+  /* 見出し */
+  h1 { font-size: 22px; margin-bottom: 10px; }
+
+  /* ラベルは縦並び */
+  label {
+    display: block;
+    margin: 10px 0 4px 0;
+    font-size: 18px;
+  }
+
+  /* 入力欄 */
+  input[type=number],
+  input[type=text] {
+    width: 220px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 18px;
+    display: block;
+    margin-bottom: 12px;
+    background-color: #d0e7ff; /* 薄い青 */
+  }
+
+  /* 補助説明文 */
+  .muted { font-size: 0.9rem; color: #666; }
+  .note { font-size: 0.85rem; color: #444; margin-top: 6px; }
+
+  /* 結果表示 */
+  .result {
+    margin-top: 14px;
+    padding: 12px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.06);
+    font-size: 18px;
+  }
+
+  /* トースト通知 */
+  .toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 28px;
+    background: #333;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .toast.show { opacity: 1; }
+
+  /* 水比率の強調 */
+  .water-ratio { color: #42a5f5; font-weight: bold; }
   </style>
+
 </head>
 <body>
   <h1>炊飯 — 水比率 逆算ツール</h1>
