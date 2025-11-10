@@ -75,18 +75,22 @@
 <body>
   <h1>炊飯 — 水比率 逆算ツール</h1>
 
-  <p class="muted">使い方: 内釜の重量を測って入力、いつもの手順で準備する。 </br >いつものお米の重量を測る、いつもの水加減で水を入れる。</br >お米＋内釜＋水の合計を測って入力すると、水比率を逆算します。</br >合計重量ではなく、水の重さを入力することでも計算できます。</p>
+  <p class="muted">内釜の重量を測って入力、いつもの手順で準備。 
+  </br >いつものお米の重量を測って入力。
+  </br >いつもの水加減で水を入れる。
+  </br >お米＋内釜＋水の合計を測って入力する。
+  </br >合計重量ではなく、水の重さ入力でも良い。</p>
 
-  <label>お米の重量 (g)： <input id="riceWeight" type="number" min="0" step="1" value="150"></label>
-  <label>内釜の重量 (g)： <input id="potWeight" type="number" min="0" step="1" value="500"></label>
+  <label>お米の重量 (g) <input id="riceWeight" type="number" min="0" step="1" value="150"></label>
+  <label>内釜の重量 (g) <input id="potWeight" type="number" min="0" step="1" value="500"></label>
 
   <hr style="margin:12px 0">
 
- <div class="note">　お米＋内釜＋水 の合計重量　か　水の重さ　片方だけ入力してください）</div>
+ <div class="note">お米＋内釜＋水の合計重量・水の重さ、どちらかを入力してください）</div>
 
-  <label>お米＋内釜＋水 の合計重量 (g)： <input id="totalMeasured" type="number" min="0" step="1" placeholder="例: 800"></label>
+  <label>お米＋内釜＋水 の合計重量 (g) <input id="totalMeasured" type="number" min="0" step="1" placeholder="例: 800"></label>
  
-  <label>水の重量 (g)　　　　　　　　 ： <input id="waterWeightDirect" type="number" min="0" step="1" placeholder="合計重量 未入力時必須"></label>
+  <label>水の重量 (g)  <input id="waterWeightDirect" type="number" min="0" step="1" placeholder="合計重量 未入力時必須"></label>
 
   <div class="result" id="result">
     <strong>計算結果：</strong>
