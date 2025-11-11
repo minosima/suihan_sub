@@ -7,14 +7,18 @@
   <style>
   body {
     font-family: 'Segoe UI', sans-serif;
-    background: #fff6d5;
+    background: #e9fcd8; /* 淡い緑色、視認性キープ */
     color: #222;
     margin: 20px;
     font-size: 18px;
   }
 
   /* 見出し */
-  h1 { font-size: 22px; margin-bottom: 10px; }
+  h1 {
+    font-size: 22px;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
 
   /* ラベルは縦並び */
   label {
@@ -23,36 +27,36 @@
     font-size: 18px;
   }
 
-  /* 入力欄 */
+  /* 入力欄（ネオングリーン + 黒枠） */
   input[type=number],
   input[type=text] {
     width: 220px;
     padding: 8px;
     border-radius: 6px;
-    border: 1px solid #ccc;
+    border: 2px solid #111;
     box-sizing: border-box;
     font-size: 18px;
     display: block;
     margin-bottom: 12px;
-    background-color: #d0e7ff; /* 薄い青 */
+    background-color: #b8f28a; /* ネオングリーン */
   }
 
   /* 補助説明文 */
   .muted { font-size: 0.9rem; color: #666; }
   .note { font-size: 0.85rem; color: #444; margin-top: 6px; }
 
-  /* 結果表示 */
+  /* 結果表示（黒フチ＋淡ピンク / スプラ UI ノリ） */
   .result {
     margin-top: 14px;
     padding: 12px;
-    background: #d0e7ff; /* 薄い青 */
-    border-radius: 8px;
-    box-shadow: 0 0 6px rgba(0,0,0,0.06);
+    background: #ffb7ea; /* やや淡めピンクで白地との相性良し */
+    border-radius: 10px;
+    border: 3px solid #111;
+    box-shadow: 0 0 0 4px #111, 0 3px 8px rgba(0,0,0,0.25); 
     font-size: 18px;
-    border: 2px solid #000;
   }
 
-  /* トースト通知 */
+  /* トースト通知（ここは無変更） */
   .toast {
     position: fixed;
     left: 50%;
@@ -66,12 +70,32 @@
     pointer-events: none;
     transition: opacity 0.3s;
   }
-
-    
   .toast.show { opacity: 1; }
 
   /* 水比率の強調 */
-  .water-ratio { color: #ff8c30; /* 濃いめのオレンジ */ font-weight: bold; }
+  .water-ratio {
+    color: #ff3fb4;             /* ショッキングピンク */
+    font-weight: 900;
+    background: #111;           /* ピンクを強調する黒 */
+    padding: 2px 6px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+  }
+  .ratio-box {
+    margin: 16px 0 20px 0;
+    padding: 14px 18px;
+    background: #111;
+    color: #ff3fb4;  /* 強調ピンク */
+    border-radius: 12px;
+    border: 4px solid #111;
+    font-size: 32px;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 1px;
+    box-shadow: 0 0 0 4px #111, 0 4px 10px rgba(0,0,0,0.35);
+  }
+  
+  
   </style>
 
 </head>
@@ -84,17 +108,19 @@
   </br >お米＋内釜＋水の合計を測って入力する。
   </br >合計重量ではなく、水の重さ入力でも良い。</p>
 
-  <label>お米の重量 (g) <input id="riceWeight" type="number" min="0" step="1" value="150"></label>
-  <label>内釜の重量 (g) <input id="potWeight" type="number" min="0" step="1" value="500"></label>
+  <label>お米の重量 (g) <input id="riceWeight" type="number" min="0" step="1" placeholder="例: 150"></label>
+  <label>内釜の重量 (g) <input id="potWeight" type="number" min="0" step="1" placeholder="例:  1000"></label>
 
   <hr style="margin:12px 0">
 
  <div class="note">お米＋内釜＋水の合計重量・水の重さ、どちらかを入力してください）</div>
 
-  <label>お米＋内釜＋水 の合計重量 (g) <input id="totalMeasured" type="number" min="0" step="1" placeholder="例: 800"></label>
+  <label>お米＋内釜＋水 の合計重量 (g) <input id="totalMeasured" type="number" min="0" step="1" placeholder="例: 1330"></label>
  
   <label>水の重量 (g)  <input id="waterWeightDirect" type="number" min="0" step="1" placeholder="合計重量 未入力時必須"></label>
-
+  <strong>いつもの水の比率</strong>
+    <div class="ratio-box" id="ratioBox">—</div>
+    </br>
   <div class="result" id="result">
     <strong>計算結果：</strong>
     <div id="resultBody" class="note">入力するとリアルタイムで結果が表示されます。</div>
@@ -102,65 +128,97 @@
 
   <div class="toast" id="toast"></div>
 
-  <script>
-    const $ = id => document.getElementById(id);
+<script>
+  const $ = id => document.getElementById(id);
 
-    function showToast(msg, ms = 1600) {
-      const t = $('toast'); t.textContent = msg; t.classList.add('show');
-      clearTimeout(t._t); t._t = setTimeout(()=> t.classList.remove('show'), ms);
+  function showToast(msg, ms = 1600) {
+    const t = $('toast'); if (!t) return;
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._t); t._t = setTimeout(()=> t.classList.remove('show'), ms);
+  }
+
+  function calc() {
+    const rice = parseFloat($('riceWeight').value) || 0;
+    const pot = parseFloat($('potWeight').value) || 0;
+    const totalMeasured = parseFloat($('totalMeasured').value);
+    const waterDirect = parseFloat($('waterWeightDirect').value);
+
+    // 未計算 / お米不足 → 共通表示
+    if (rice <= 0) {
+      $('ratioBox').textContent = '未計算';
+      $('resultBody').innerHTML = '<span class="muted">お米の重量を入力してください。</span>';
+      return;
     }
 
-    function calc() {
-      const rice = parseFloat($('riceWeight').value) || 0;
-      const pot = parseFloat($('potWeight').value) || 0;
-      const totalMeasured = parseFloat($('totalMeasured').value);
-      const waterDirect = parseFloat($('waterWeightDirect').value);
-
-      if (rice <= 0) {
-        $('resultBody').innerHTML = '<span style="color:#c62828">お米の重量は 0 より大きい値を入力してください。</span>';
-        return;
-      }
-
-      let water = null;
-      if (!isNaN(waterDirect) && waterDirect >= 0) {
-        water = waterDirect;
-      } else if (!isNaN(totalMeasured) && totalMeasured >= 0) {
-        water = totalMeasured - rice - pot;
-      } else {
-        $('resultBody').innerHTML = '<span class="muted">合計重量 または 水の重さ のどちらかを入力してください。</span>';
-        return;
-      }
-
-      if (water < 0) {
-        $('resultBody').innerHTML = '<span style="color:#c62828">水の重さが負になります。入力値を確認してください。</span>';
-        return;
-      }
-
-      const waterRatio = water / rice;
-      const ricePlusWater = rice + water;
-      const total = ricePlusWater + pot;
-      const go = rice / 150;
-
-      $('resultBody').innerHTML = `
-        水の重さ: <strong>${Math.round(water)} g</strong><br>
-        水比率 (水 / お米): <span class="water-ratio">${waterRatio.toFixed(3)}</span><br>
-        お米＋水: <strong>${Math.round(ricePlusWater)} g</strong><br>
-        お米＋水＋内釜: <strong>${Math.round(total)} g</strong><br>
-        お米の目安: 約 <strong>${go.toFixed(2)}</strong> 合
-      `;
+    let water = null;
+    if (!isNaN(waterDirect) && waterDirect >= 0) {
+      water = waterDirect;
+    } else if (!isNaN(totalMeasured) && totalMeasured >= 0) {
+      water = totalMeasured - rice - pot;
+    } else {
+      $('ratioBox').textContent = '未計算';
+      $('resultBody').innerHTML = '<span class="muted">合計重量 または 水の重さ を入力してください。</span>';
+      return;
     }
 
-    ['riceWeight','potWeight','totalMeasured','waterWeightDirect'].forEach(id=>{
-      $(id).addEventListener('input', ()=>{
-        const val = $(id).value;
-        if (val !== '') {
-          clearTimeout($(id)._timer);
-          $(id)._timer = setTimeout(calc, 180);
+    if (water < 0) {
+      $('ratioBox').textContent = '未計算';
+      $('resultBody').innerHTML = '<span class="muted">水の重さが負になります。入力値を確認してください。</span>';
+      return;
+    }
+
+    const waterRatio = water / rice;
+    const ricePlusWater = rice + water;
+    const total = ricePlusWater + pot;
+    const go = rice / 150;
+
+    // 正常結果
+    $('ratioBox').textContent = waterRatio.toFixed(3);
+    $('resultBody').innerHTML = `
+      水の重さ: <strong>${Math.round(water)} g</strong><br>
+      水比率 (水 / お米): <span class="water-ratio">${waterRatio.toFixed(3)}</span><br>
+      お米＋水: <strong>${Math.round(ricePlusWater)} g</strong><br>
+      お米＋水＋内釜: <strong>${Math.round(total)} g</strong><br>
+      お米の目安: 約 <strong>${go.toFixed(2)}</strong> 合
+    `;
+  }
+
+  // 入力欄配列（Enterで次へ）
+  const inputs = [
+    'riceWeight',
+    'potWeight',
+    'totalMeasured',
+    'waterWeightDirect'
+  ].map(id => $(id));
+
+  inputs.forEach((input, idx) => {
+    if (!input) return;
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const next = inputs[idx + 1];
+        if (next) {
+          next.focus();
+          // スマホ等で選択状態にする目的で select() を試みる
+          try { next.select(); } catch (err) {}
+        } else {
+          // 末尾 → 結果表示にスクロール
+          const rb = $('ratioBox');
+          if (rb && rb.scrollIntoView) rb.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      });
+      }
     });
 
-    window.addEventListener('load', calc);
-  </script>
+    // input イベントで遅延計算（デバウンス）
+    input.addEventListener('input', () => {
+      clearTimeout(input._timer);
+      input._timer = setTimeout(calc, 180);
+    });
+  });
+
+  // 初回実行
+  window.addEventListener('load', calc);
+</script>
+
 </body>
 </html>
